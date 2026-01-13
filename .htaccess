@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Blokir berdasarkan User-Agent yang mengandung kata-kata umum bot
+    RewriteCond %{HTTP_USER_AGENT} (googlebot|bingbot|slurp|duckduckgo|baidu|yandex|sogou|exabot|facebot|ia_archiver) [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|twitterbot|linkedinbot|embedly|quora\ link\ preview|pinterest|slackbot|vkShare|outbrain|W3C_Validator) [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} (bot|crawl|spider|slurp|curl|wget|python|perl|ruby|java|libwww-perl|httpclient) [NC]
+    
+    # Jika cocok dengan salah satu di atas, berikan Error 403 (Forbidden)
+    RewriteRule ^.* - [F,L]
+</IfModule>
+
+# Opsional: Mematikan browsing direktori agar orang tidak bisa melihat daftar file
+Options -Indexes
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “alt-php84” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-alt-php84 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Antrian PTSP - Kemenag</title>
+		<link rel="stylesheet" href="style.css"> 
+		<style>
+			:root {
+				--kemenag-green: #006316;
+				--kemenag-gold: #f0a900;
+				--text-dark: #333;
+				--text-light: #ffffff;
+			}
+			body {
+				font-family: Arial, Helvetica, sans-serif;
+				margin: 0;
+				padding: 0;
+				background-color: var(--kemenag-green);
+				color: var(--text-light);
+				overflow: hidden;
+			}
+			.display-wrapper {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+				padding: 0;
+			}
+			
+			/* --- HEADER (PUTIH) --- */
+			.display-header {
+				display: flex;
+				align-items: center;
+				background-color: #ffffff; 
+				border-bottom: 6px solid var(--kemenag-gold);
+				padding: 0 2vw;
+				height: 14vh;
+				flex-shrink: 0;
+				box-sizing: border-box;
+				justify-content: space-between;
+			}
+			.header-left-group { display: flex; align-items: center; flex: 1; }
+			.display-header .logo-kiri { height: 10vh; width: auto; margin-right: 1.5vw; }
+			.display-header .header-text { text-align: left; }
+			
+			.display-header h1 { 
+				font-size: 3.5vh; margin: 0; font-weight: 800; 
+				color: #000000; 
+				line-height: 1.2;
+			}
+			.display-header p { 
+				font-size: 2.8vh; margin: 0; font-weight: 800; 
+				color: #000000; 
+				line-height: 1.2;
+			}
+			
+			.header-right-group { display: flex; align-items: center; gap: 2vw; }
+			.header-right-group img { height: 9vh; width: auto; }
+			
+			.header-clock-box { 
+				text-align: right; 
+				border-left: 3px solid #ddd; 
+				padding-left: 2vw; 
+			}
+			#clock-time { 
+				font-size: 5.5vh; font-weight: 800; line-height: 1; margin-bottom: 0.5vh; 
+				color: #000000; 
+				white-space: nowrap;
+				font-variant-numeric: tabular-nums;
+			}
+			#clock-date { 
+				font-size: 2.6vh; font-weight: bold; white-space: nowrap; 
+				color: #000000; 
+				text-transform: uppercase;
+				letter-spacing: 1px;
+			}
+
+			/* --- CONTENT WRAPPER --- */
+			.main-content-wrapper {
+				display: flex;
+				flex-grow: 1;
+				padding: 2vh 2vw;
+				gap: 2vw;
+				min-height: 0; 
+			}
+
+			/* --- GRID ANTRIAN --- */
+			.display-main {
+				flex: 3;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				grid-template-rows: 1fr 1fr;
+				gap: 2vh 2vw; 
+			}
+			.call-box {
+				background-color: var(--text-light);
+				color: var(--text-dark);
+				padding: 1vh;
+				border-radius: 1.5vh;
+				text-align: center;
+				box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+				border: 4px solid var(--kemenag-gold);
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+			}
+			.call-box h2 { font-size: 3.5vh; margin: 0; color: var(--kemenag-green); font-weight: 800; }
+			.call-box .nomor-antrian { font-size: 11vh; font-weight: 900; color: #333; margin: 0; line-height: 1; }
+			.call-box .loket { font-size: 4.5vh; font-weight: 800; margin: 0; color: #555; }
+			.call-box .info { font-size: 2.2vh; margin-top: 1vh; font-weight: bold; color: #666; }
+			
+			.call-box.highlight { animation: highlight-anim 1s ease-in-out infinite alternate; }
+			@keyframes highlight-anim {
+				from { transform: scale(1); border-color: var(--kemenag-gold); }
+				to { transform: scale(1.02); border-color: #fff; box-shadow: 0 0 20px var(--kemenag-gold); }
+			}
+
+			/* --- SIDEBAR JADWAL SALAT --- */
+			.prayer-sidebar {
+				flex: 1; 
+				background-color: #004a11;
+				background-image: radial-gradient(circle, #006316 0%, #00380e 100%);
+				border-radius: 1.5vh;
+				padding: 2vh;
+				display: flex;
+				flex-direction: column;
+				border: 4px solid var(--kemenag-gold);
+				box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+			}
+			
+			.prayer-title {
+				text-align: center;
+				font-size: 2.5vh;
+				font-weight: 900;
+				color: #ffffff;
+				margin-bottom: 1vh;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+				border-bottom: 2px solid rgba(255,255,255,0.2);
+				padding-bottom: 1.5vh;
+				flex-shrink: 0;
+			}
+			
+			.prayer-list {
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start; 
+				gap: 1.5vh;
+				flex-grow: 1;
+				margin-top: 2vh;
+			}
+
+			.prayer-item {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 1.5vh 2vh;
+				font-size: 2.8vh;
+				font-weight: bold;
+				color: white;
+				background: rgba(255,255,255,0.1);
+				border-left: 6px solid var(--kemenag-gold);
+				border-radius: 0 10px 10px 0;
+				margin-bottom: 0; 
+				box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+				transition: all 0.3s;
+			}
+			
+			.prayer-item span:last-child {
+				font-family: Arial, Helvetica, sans-serif;
+				font-weight: 800;
+				font-variant-numeric: tabular-nums;
+			}
+			
+			.prayer-item.active {
+				background-color: var(--kemenag-gold);
+				color: #000;
+				border-left: 6px solid #fff;
+				font-weight: 900;
+				transform: scale(1.05);
+				box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+			}
+			
+			/* * CSS BARU UNTUK SUMBER DATA */
+			.prayer-source {
+				text-align: center;
+				font-size: 1.5vh;
+				color: rgba(255, 255, 255, 0.6); /* Putih transparan */
+				margin-top: auto; /* Dorong ke paling bawah */
+				padding-top: 1vh;
+				font-style: italic;
+			}
+
+			/* --- FOOTER --- */
+			.display-footer {
+				height: 7vh;
+				background-color: #ffffff; 
+				border-top: 4px solid var(--kemenag-gold);
+				display: flex;
+				align-items: center;
+				flex-shrink: 0;
+				overflow: hidden;
+				white-space: nowrap;
+				position: relative;
+			}
+			.ticker-wrap { width: 100%; overflow: hidden; }
+			.ticker-move {
+				display: inline-block;
+				white-space: nowrap;
+				animation: ticker-slide linear infinite;
+			}
+			.ticker-item {
+				display: inline-block;
+				padding-right: 30vw; 
+				font-size: 3.2vh;
+				font-weight: bold;
+				letter-spacing: 1px;
+				color: #000000; 
+			}
+			@keyframes ticker-slide {
+				0% { transform: translate3d(0, 0, 0); }
+				100% { transform: translate3d(-50%, 0, 0); }
+			}
+
+			/* Overlay Visual Azan */
+			#azan-overlay {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background-color: rgba(0, 60, 0, 0.98);
+				z-index: 9999; display: none;
+				flex-direction: column; justify-content: center; align-items: center;
+				color: white; text-align: center;
+			}
+			#azan-overlay h1 { font-size: 8vh; margin-bottom: 2vh; color: var(--kemenag-gold); text-shadow: 2px 2px 4px #000; }
+			#azan-overlay h2 { font-size: 6vh; font-weight: 800; }
+			#azan-overlay .waktu-salat { font-size: 15vh; font-weight: 900; margin: 4vh 0; color: var(--kemenag-gold); }
+			
+			/* Overlay Start */
+			#start-overlay {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background: rgba(0,0,0,0.8); z-index: 10000;
+				display: flex; justify-content: center; align-items: center;
+				color: white; font-size: 3vh; cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<div id="start-overlay">Klik di Sini untuk Memulai Sistem</div>
+
+		<div class="display-wrapper">
+			<header class="display-header">
+				<div class="header-left-group">
+					<img class="logo-kiri" src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png" alt="Logo Kemenag">
+					<div class="header-text">
+						<h1>LAYANAN ANTRIAN PTSP</h1>
+						<p>KANTOR KEMENTERIAN AGAMA KOTA DEPOK</p>
+					</div>
+				</div>
+				
+				<div class="header-right-group">
+					<img src="berdampak.webp" alt="Logo Berdampak">
+					<div class="header-clock-box">
+						<div id="clock-time">00:00:00 WIB</div>
+						<div id="clock-date">...</div>
+					</div>
+				</div>
+			</header>
+
+			<div class="main-content-wrapper">
+				<main class="display-main">
+					<div class="call-box" id="box-A">
+						<h2 id="nama-A">Pelayanan Haji</h2>
+						<div id="nomor-A" class="nomor-antrian">A-0</div>
+						<h3 id="loket-A" class="loket">LOKET 1</h3>
+						<div class="info">Total: <span id="total-A">0</span> | Sisa: <span id="sisa-A">0</span></div>
+					</div>
+					<div class="call-box" id="box-B">
+						<h2 id="nama-B">Pelayanan Umrah</h2>
+						<div id="nomor-B" class="nomor-antrian">B-0</div>
+						<h3 id="loket-B" class="loket">LOKET 1</h3>
+						<div class="info">Total: <span id="total-B">0</span> | Sisa: <span id="sisa-B">0</span></div>
+					</div>
+					<div class="call-box" id="box-C">
+						<h2 id="nama-C">Administratif</h2>
+						<div id="nomor-C" class="nomor-antrian">C-0</div>
+						<h3 id="loket-C" class="loket">LOKET 1</h3>
+						<div class="info">Total: <span id="total-C">0</span> | Sisa: <span id="sisa-C">0</span></div>
+					</div>
+					<div class="call-box" id="box-D">
+						<h2 id="nama-D">Customer Service</h2>
+						<div id="nomor-D" class="nomor-antrian">D-0</div>
+						<h3 id="loket-D" class="loket">LOKET 1</h3>
+						<div class="info">Total: <span id="total-D">0</span> | Sisa: <span id="sisa-D">0</span></div>
+					</div>
+				</main>
+
+				<aside class="prayer-sidebar">
+					<div class="prayer-title">JADWAL SALAT<br>KOTA DEPOK</div>
+					<div class="prayer-list">
+						<div class="prayer-item" id="row-subuh"><span>SUBUH</span> <span id="time-subuh">--:-- WIB</span></div>
+						<div class="prayer-item" id="row-dzuhur"><span>DZUHUR</span> <span id="time-dzuhur">--:-- WIB</span></div>
+						<div class="prayer-item" id="row-ashar"><span>ASHAR</span> <span id="time-ashar">--:-- WIB</span></div>
+						<div class="prayer-item" id="row-maghrib"><span>MAGHRIB</span> <span id="time-maghrib">--:-- WIB</span></div>
+						<div class="prayer-item" id="row-isya"><span>ISYA</span> <span id="time-isya">--:-- WIB</span></div>
+					</div>
+					<div class="prayer-source">Sumber: bimasislam.kemenag.go.id</div>
+				</aside>
+			</div>
+			
+			<footer class="display-footer">
+				<div class="ticker-wrap">
+					<div class="ticker-move" id="ticker-move">
+						<span class="ticker-item">Memuat Teks...</span>
+						<span class="ticker-item">Memuat Teks...</span>
+					</div>
+				</div>
+			</footer>
+		</div>
+
+		<div id="azan-overlay">
+			<h1>WAKTU SALAT TELAH TIBA</h1>
+			<h2 id="azan-name">MAGHRIB</h2>
+			<div class="waktu-salat" id="azan-time">18:00 WIB</div>
+			<p style="font-size: 3vh;">Untuk Wilayah Kota Depok & Sekitarnya</p>
+		</div>
+
+		<script>
+			const API_URL_BASE = 'https://ptsp.amal.or.id/api.php';
+			const timeEl = document.getElementById('clock-time');
+			const dateEl = document.getElementById('clock-date');
+			const tickerMove = document.getElementById('ticker-move');
+			const runningTextEl = document.getElementById('running-text-content'); // Placeholder var
+			
+			let prayerTimes = {};
+			let azanPlayed = {}; 
+			let currentRunningText = '';
+			let nomorTerdahulu = { A: 0, B: 0, C: 0, D: 0 };
+			
+			const synth = window.speechSynthesis;
+			let voices = [];
+			
+			const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+			const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+			// 1. JAM
+			function updateClock() {
+				const now = new Date();
+				const h = String(now.getHours()).padStart(2, '0');
+				const m = String(now.getMinutes()).padStart(2, '0');
+				const s = String(now.getSeconds()).padStart(2, '0');
+				
+				if (timeEl) timeEl.textContent = `${h}:${m}:${s} WIB`; 
+				
+				const dayName = days[now.getDay()];
+				const d = now.getDate();
+				const mo = months[now.getMonth()];
+				const y = now.getFullYear();
+				dateEl.textContent = `${dayName}, ${d} ${mo} ${y}`;
+
+				checkPrayerTime(h, m);
+			}
+
+			// 2. TICKER SEAMLESS
+			function updateTicker(text) {
+				const html = `<span class="ticker-item">${text}</span><span class="ticker-item">${text}</span>`;
+				tickerMove.innerHTML = html;
+				const duration = Math.max(20, text.length * 0.15); 
+				tickerMove.style.animationDuration = `${duration}s`;
+			}
+
+			// 3. JADWAL SALAT
+			async function fetchPrayerTimes() {
+				const now = new Date();
+				const y = now.getFullYear();
+				const m = String(now.getMonth() + 1).padStart(2, '0');
+				const d = String(now.getDate()).padStart(2, '0');
+				
+				// API MyQuran (Data Kemenag)
+				const url = `https://api.myquran.com/v2/sholat/jadwal/1225/${y}/${m}/${d}`;
+				
+				try {
+					const response = await fetch(url);
+					const data = await response.json();
+					if (data && data.status && data.data && data.data.jadwal) {
+						const jadwal = data.data.jadwal;
+						prayerTimes = {
+							'subuh': jadwal.subuh,
+							'dzuhur': jadwal.dzuhur,
+							'ashar': jadwal.ashar,
+							'maghrib': jadwal.maghrib,
+							'isya': jadwal.isya
+						};
+						for (const [sholat, waktu] of Object.entries(prayerTimes)) {
+							document.getElementById(`time-${sholat}`).textContent = `${waktu} WIB`;
+						}
+					}
+				} catch (e) { console.error("Jadwal Salat Error", e); }
+			}
+
+			function checkPrayerTime(h, m) {
+				const currentTime = `${h}:${m}`;
+				if (currentTime === "00:00") azanPlayed = {};
+
+				for (const [sholat, waktu] of Object.entries(prayerTimes)) {
+					const el = document.getElementById(`row-${sholat}`);
+					if (waktu === currentTime) {
+						if (!azanPlayed[sholat]) {
+							triggerAzanVisual(sholat, waktu);
+							azanPlayed[sholat] = true;
+						}
+						el.classList.add('active');
+					} else {
+						el.classList.remove('active');
+					}
+				}
+			}
+
+			function triggerAzanVisual(name, time) {
+				const overlay = document.getElementById('azan-overlay');
+				document.getElementById('azan-name').textContent = name.toUpperCase();
+				document.getElementById('azan-time').textContent = `${time} WIB`;
+				overlay.style.display = 'flex';
+				setTimeout(() => { overlay.style.display = 'none'; }, 30000); 
+			}
+
+			// 4. DATA (TEKS & ANTRIAN)
+			async function fetchData() {
+				try {
+					const resText = await fetch(`${API_URL_BASE}?action=get_setting&key=running_text`);
+					if (resText.ok) {
+						const data = await resText.json();
+						if (data.key_value && data.key_value !== currentRunningText) {
+							currentRunningText = data.key_value;
+							updateTicker(currentRunningText);
+						}
+					}
+				} catch (e) {}
+
+				try {
+					if (document.getElementById('azan-overlay').style.display === 'flex') return;
+
+					const resStatus = await fetch(`${API_URL_BASE}?action=status`);
+					if (!resStatus.ok) return;
+					const data = await resStatus.json();
+					
+					document.querySelectorAll('.call-box').forEach(el => el.classList.remove('highlight'));
+					
+					for (const kode in data) {
+						if (data.hasOwnProperty(kode)) {
+							const antrian = data[kode];
+							updateTampilan(kode, antrian); 
+							
+							if (antrian.nomor_sekarang > nomorTerdahulu[kode]) {
+								nomorTerdahulu[kode] = antrian.nomor_sekarang;
+								panggilSuara(kode, antrian.nomor_sekarang, antrian.loket_terakhir);
+								document.getElementById(`box-${kode}`).classList.add('highlight');
+							}
+						}
+					}
+				} catch (e) {}
+			}
+
+			function updateTampilan(kode, data) {
+				if (!data) return; 
+				const sisa = data.total_antrian - data.nomor_sekarang;
+				document.getElementById(`nama-${kode}`).textContent = data.nama_layanan;
+				document.getElementById(`nomor-${kode}`).textContent = `${kode}-${data.nomor_sekarang}`;
+				document.getElementById(`loket-${kode}`).textContent = `LOKET ${data.loket_terakhir}`;
+				document.getElementById(`total-${kode}`).textContent = data.total_antrian;
+				document.getElementById(`sisa-${kode}`).textContent = sisa < 0 ? 0 : sisa;
+			}
+
+			// 5. AUDIO
+			function loadVoices() {
+				let allIndonesianVoices = synth.getVoices().filter(v => v.lang === 'id-ID' || v.lang.startsWith('id'));
+				if (allIndonesianVoices.length === 0) { voices = synth.getVoices(); return; }
+				const getScore = (voice) => {
+					const name = voice.name.toLowerCase();
+					if (name.includes('google') && name.includes('indonesia')) return 0;
+					if (name.includes('gadis')) return 1;
+					return 10;
+				};
+				allIndonesianVoices.sort((a, b) => getScore(a) - getScore(b));
+				voices = allIndonesianVoices;
+			}
+
+			function panggilSuara(kode, nomor, loket) {
+				if (synth.speaking) return;
+				const teks = `Nomor Antrian, ${kode}, ${nomor}, silahkan, ke Loket, ${loket}`;
+				const utterance = new SpeechSynthesisUtterance(teks);
+				utterance.lang = 'id-ID';
+				if (voices.length > 0) utterance.voice = voices[0];
+				utterance.pitch = 1; utterance.rate = 0.9;
+				synth.speak(utterance);
+			}
+
+			// INIT
+			function init() {
+				console.log('System Init');
+				document.getElementById('start-overlay').style.display = 'none';
+				loadVoices();
+				
+				fetchPrayerTimes(); 
+				fetchData(); 
+				
+				setInterval(updateClock, 1000); 
+				setInterval(fetchData, 2000); 
+				setInterval(fetchPrayerTimes, 3600000); 
+
+				const welcome = new SpeechSynthesisUtterance('Sistem antrian aktif');
+				welcome.lang = 'id-ID';
+				if (voices.length > 0) welcome.voice = voices[0];
+				synth.speak(welcome);
+			}
+
+			if (synth.onvoiceschanged !== undefined) {
+				synth.onvoiceschanged = loadVoices;
+			}
+			
+			document.getElementById('start-overlay').addEventListener('click', init);
+			updateClock();
+			fetchPrayerTimes(); // Panggil awal untuk isi data sebelum klik
+		</script>
+	</body>
+</html>

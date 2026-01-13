@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>TV Display Informasi - PTSP Kemenag</title>
+		<link rel="stylesheet" href="style.css">
+		<style>
+			/* CSS KHUSUS TV */
+			:root {
+				--kemenag-green: #006316;
+				--kemenag-gold: #f0a900;
+				--text-light: #ffffff;
+			}
+			body {
+				background-color: var(--kemenag-green);
+				color: var(--text-light);
+				overflow: hidden;
+				margin: 0;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+			.tv-wrapper {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+			}
+			
+			/* Header */
+			.display-header {
+				display: flex; align-items: center; padding: 0 2vw;
+				background-color: #ffffff; 
+				border-bottom: 6px solid var(--kemenag-gold);
+				flex-shrink: 0; height: 14vh; box-sizing: border-box;
+				justify-content: space-between;
+			}
+			
+			.header-left-group { display: flex; align-items: center; flex: 1; }
+			.display-header .logo-kiri { height: 10vh; width: auto; margin-right: 1.5vw; }
+			.display-header .header-text {
+					text-align: left !important;
+					font-weight: 800 !important;
+					font-size: 800px !important;
+				}
+
+			
+			.display-header h1 { 
+				font-size: 3.5vh; margin: 0; font-weight: 800;
+				text-transform: uppercase; line-height: 1.2; color: #000;
+			}
+			.display-header p { 
+				font-size: 3vh; margin: 0; font-weight: 800; 
+				text-transform: uppercase; line-height: 1.2; color: #000;
+			}
+			
+			.header-right-group { display: flex; align-items: center; gap: 2vw; }
+			.header-right-group img { height: 9vh; width: auto; }
+			
+			.header-clock-box { 
+				text-align: right; border-left: 3px solid #ddd; padding-left: 2vw; 
+			}
+			.clock-time { 
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 5.5vh; font-weight: 800; line-height: 1; margin-bottom: 0.5vh; 
+				color: var(--kemenag-green); min-width: 240px; 
+				font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
+			}
+			.clock-date { 
+				font-size: 2.6vh; font-weight: bold; white-space: nowrap; 
+				color: #000; letter-spacing: 1px; text-transform: uppercase;
+			}
+
+			/* Main Content */
+			.tv-content {
+				flex-grow: 1; display: flex; padding: 0;
+				height: calc(100vh - 14vh - 6vh);
+			}
+			
+			/* Video Section */
+			.video-section {
+				flex: 3; background: #000; position: relative;
+				border-right: 4px solid var(--kemenag-gold);
+			}
+			.video-section iframe { width: 100%; height: 100%; border: 0; }
+			
+			/* Info Section */
+			.info-section {
+				flex: 1; display: flex; flex-direction: column;
+				background-color: #004a11; padding: 0; 
+				background-image: radial-gradient(circle, #006316 0%, #00380e 100%);
+			}
+			.schedule-box { height: 100%; display: flex; flex-direction: column; }
+			.schedule-title {
+				background-color: #006316; color: #fff;
+				display: flex; align-items: center; justify-content: center;
+				height: 8vh; padding: 0 1vh;
+				font-size: 2.2vh; font-weight: 900; text-transform: uppercase;
+				box-shadow: 0 4px 6px rgba(0,0,0,0.2); flex-shrink: 0;
+				white-space: nowrap; overflow: hidden; 
+			}
+			.schedule-list { flex-grow: 1; padding: 2vh; overflow-y: auto; }
+			.schedule-item {
+				background: rgba(255,255,255,0.1); border-left: 5px solid var(--kemenag-gold);
+				margin-bottom: 1.5vh; padding: 1.5vh; color: white;
+				font-size: 2.2vh; font-weight: bold; line-height: 1.4;
+				border-radius: 0 10px 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+			}
+
+			/* * FOOTER BARU (CSS Infinite Scroll)
+			 * Menggantikan marquee dengan animasi CSS
+			 */
+			.display-footer {
+				height: 6vh;
+				background-color: #ffffff; 
+				border-top: 4px solid var(--kemenag-gold);
+				display: flex; 
+				align-items: center; 
+				flex-shrink: 0;
+				overflow: hidden; /* Sembunyikan teks yang lewat */
+				position: relative;
+			}
+			
+			.ticker-wrap {
+				width: 100%;
+				overflow: hidden;
+				white-space: nowrap;
+			}
+
+			/* Kontainer yang bergerak */
+			.ticker-move {
+				display: inline-block;
+				white-space: nowrap;
+				will-change: transform;
+				/* Animasi default 30s, nanti diatur JS sesuai panjang teks */
+				animation: ticker-slide 30s linear infinite; 
+			}
+
+			/* Item teks (asli dan duplikat) */
+			.ticker-item {
+				display: inline-block;
+				padding-right: 20vw; /* Jarak kosong sebelum pengulangan (20% lebar layar) */
+				font-size: 3vh; 
+				font-weight: bold; 
+				letter-spacing: 1px;
+				color: #000000;
+			}
+
+			/* Definisi Animasi: Gerak dari 0% ke -50% (karena ada 2 item identik) */
+			@keyframes ticker-slide {
+				0% { transform: translate3d(0, 0, 0); }
+				100% { transform: translate3d(-50%, 0, 0); }
+			}
+			
+			#start-overlay {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background: rgba(0,0,0,0.9); z-index: 9999;
+				display: flex; flex-direction: column; justify-content: center; align-items: center;
+				color: white; cursor: pointer;
+			}
+			#start-overlay h1 { font-size: 4vh; margin-bottom: 2vh; }
+		</style>
+	</head>
+	<body>
+		<div id="start-overlay">
+			<h1>Klik Layar untuk Memulai TV</h1>
+			<p>(Diperlukan untuk memutar Video Otomatis)</p>
+		</div>
+
+		<div class="tv-wrapper">
+			<header class="display-header">
+				<div class="header-left-group">
+					<img class="logo-kiri" src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png" alt="Logo Kemenag">
+					<div class="header-text">
+						<h1>KANTOR KEMENTERIAN AGAMA</h1>
+						<p>KOTA DEPOK</p>
+					</div>
+				</div>
+				
+				<div class="header-right-group">
+					<img src="berdampak.webp" alt="Logo Berdampak">
+					<div class="header-clock-box">
+						<div class="clock-time" id="tv-time">00:00:00 WIB</div>
+						<div class="clock-date" id="tv-date">...</div>
+					</div>
+				</div>
+			</header>
+
+			<div class="tv-content">
+				<div class="video-section">
+					<iframe id="yt-player" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+				</div>
+
+				<div class="info-section">
+					<div class="schedule-box">
+						<div class="schedule-title">JADWAL KEGIATAN KANTOR HARI INI</div>
+						<div class="schedule-list" id="schedule-container">
+							<div class="schedule-item">Memuat jadwal...</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<footer class="display-footer">
+				<div class="ticker-wrap">
+					<div class="ticker-move" id="ticker-move">
+						<span class="ticker-item">Memuat Teks...</span>
+						<span class="ticker-item">Memuat Teks...</span>
+					</div>
+				</div>
+			</footer>
+		</div>
+
+		<script>
+			const API_URL_BASE = 'https://ptsp.amal.or.id/api.php';
+			const player = document.getElementById('yt-player');
+			const scheduleContainer = document.getElementById('schedule-container');
+			const timeEl = document.getElementById('tv-time');
+			const dateEl = document.getElementById('tv-date');
+			
+			// Element Ticker Baru
+			const tickerMove = document.getElementById('ticker-move');
+			
+			const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+			const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+			
+			let currentPlaylistId = '';
+			let currentSchedule = '';
+			let currentRunningText = '';
+
+			// --- 1. JAM ---
+			function updateClock() {
+				const now = new Date();
+				const h = String(now.getHours()).padStart(2, '0');
+				const m = String(now.getMinutes()).padStart(2, '0');
+				const s = String(now.getSeconds()).padStart(2, '0');
+				timeEl.textContent = `${h}:${m}:${s} WIB`; 
+				
+				const dayName = days[now.getDay()];
+				const d = now.getDate();
+				const mo = months[now.getMonth()];
+				const y = now.getFullYear();
+				dateEl.textContent = `${dayName}, ${d} ${mo} ${y}`;
+			}
+			setInterval(updateClock, 1000);
+			updateClock();
+
+			// --- 2. YOUTUBE HELPER ---
+			function getYoutubeSrc(input) {
+				let videoId = null; let listId = null;
+				try {
+					if (input.includes('youtube.com') || input.includes('youtu.be')) {
+						const url = new URL(input);
+						if (url.searchParams.has('v')) videoId = url.searchParams.get('v');
+						if (url.searchParams.has('list')) listId = url.searchParams.get('list');
+					} else {
+						if (input.startsWith('PL')) listId = input; else videoId = input;
+					}
+					if (videoId && listId) return `https://www.youtube.com/embed/${videoId}?list=${listId}&autoplay=1&loop=1&mute=0&controls=0&showinfo=0&rel=0`;
+					else if (listId) return `https://www.youtube.com/embed?listType=playlist&list=${listId}&autoplay=1&loop=1&mute=0&controls=0&showinfo=0&rel=0`;
+					else if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&mute=0&controls=0&showinfo=0&rel=0&playlist=${videoId}`;
+					return "";
+				} catch (e) { return ""; }
+			}
+
+			// --- 3. UPDATE TEXT TICKER ---
+			function updateTicker(text) {
+				// 1. Masukkan teks 2 kali (Asli & Duplikat) untuk seamless loop
+				const html = `<span class="ticker-item">${text}</span><span class="ticker-item">${text}</span>`;
+				tickerMove.innerHTML = html;
+				
+				// 2. Hitung durasi animasi berdasarkan panjang teks agar kecepatan konsisten
+				// Misalnya: 0.15 detik per karakter. Minimal 15 detik.
+				const baseSpeed = 0.15; 
+				const duration = Math.max(15, text.length * baseSpeed);
+				
+				// 3. Terapkan durasi ke CSS
+				tickerMove.style.animationDuration = `${duration}s`;
+			}
+
+			// --- 4. FETCH SETTINGS ---
+			async function fetchSettings() {
+				// Teks Berjalan
+				try {
+					const resText = await fetch(`${API_URL_BASE}?action=get_setting&key=running_text`);
+					if (resText.ok) {
+						const data = await resText.json();
+						// Cek jika teks berubah
+						if (data.key_value && data.key_value !== currentRunningText) {
+							currentRunningText = data.key_value;
+							updateTicker(currentRunningText);
+						}
+					}
+				} catch (e) {}
+
+				// YouTube
+				try {
+					const resVid = await fetch(`${API_URL_BASE}?action=get_setting&key=youtube_playlist_id`);
+					if (resVid.ok) {
+						const data = await resVid.json();
+						const inputVal = data.key_value;
+						if (inputVal && inputVal !== currentPlaylistId) {
+							currentPlaylistId = inputVal;
+							player.src = getYoutubeSrc(inputVal);
+						}
+					}
+				} catch (e) {}
+
+				// Jadwal Kegiatan
+				try {
+					const resSched = await fetch(`${API_URL_BASE}?action=get_setting&key=office_schedule`);
+					if (resSched.ok) {
+						const data = await resSched.json();
+						if (data.key_value && data.key_value !== currentSchedule) {
+							currentSchedule = data.key_value;
+							renderSchedule(currentSchedule);
+						}
+					}
+				} catch (e) {}
+			}
+
+			function renderSchedule(text) {
+				scheduleContainer.innerHTML = ''; 
+				if(!text) return;
+				const lines = text.split('\n'); 
+				lines.forEach(line => {
+					if(line.trim() !== '') {
+						const div = document.createElement('div');
+						div.className = 'schedule-item';
+						div.textContent = line;
+						scheduleContainer.appendChild(div);
+					}
+				});
+			}
+			
+			// Cek update setiap 30 detik
+			setInterval(fetchSettings, 30000);
+			
+			document.getElementById('start-overlay').addEventListener('click', function() {
+				this.style.display = 'none';
+				fetchSettings(); 
+			});
+			
+			fetchSettings();
+		</script>
+	</body>
+</html>

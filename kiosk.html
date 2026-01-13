@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Ambil Nomor Antrian - PTSP Kemenag</title>
+		<link rel="stylesheet" href="style.css">
+		<style>
+			/* ... (Semua CSS dari sebelumnya, tidak ada perubahan) ... */
+			:root {
+				--kemenag-green: #006316;
+				--kemenag-gold: #f0a900;
+				--text-dark: #333;
+				--text-light: #ffffff;
+				--background: #f4f4f4;
+			}
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+				margin: 0;
+				padding: 0;
+				background-color: var(--kemenag-green);
+				color: var(--text-light);
+				overflow: hidden;
+			}
+			.display-wrapper {
+				display: flex;
+				flex-direction: column;
+				height: 100vh;
+				padding: 2vh 2vw;
+				box-sizing: border-box;
+			}
+			.display-header {
+				display: flex;
+				align-items: center;
+				border-bottom: 2px solid var(--kemenag-gold);
+				padding-bottom: 1.5vh;
+				flex-shrink: 0;
+			}
+			.display-header .logo-kiri {
+				height: 10vh; 
+				width: auto;
+				margin-right: 2vw;
+			}
+			.display-header .header-text {
+				flex-grow: 1; 
+				text-align: left; 
+			}
+			.display-header h1 { font-size: 4.5vh; margin: 0; }
+			.display-header p { font-size: 2.5vh; margin: 0; }
+			.header-right-content {
+				display: flex;
+				align-items: center;
+				gap: 1.5vw; 
+				margin-left: 2vw; 
+			}
+			.header-right-content img {
+				height: 8vh; 
+				width: auto;
+			}
+			#clock-container {
+				text-align: right;
+				line-height: 1.2;
+				color: var(--text-light);
+			}
+			#clock-time { font-size: 4vh; font-weight: bold; white-space: nowrap; }
+			#clock-date { font-size: 2vh; white-space: nowrap; }
+			.kiosk-main-content {
+				flex-grow: 1;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				padding: 2vh 0;
+				min-height: 0;
+			}
+			.kiosk-menu {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 2vh 2vw;
+				width: 80%; 
+			}
+			.kiosk-btn {
+				padding: 2vh;
+				font-size: 3vh; 
+				text-align: center;
+				color: var(--text-dark);
+				background-color: #ffffff;
+				border: 1px solid #ddd;
+				box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+				border-radius: 1.5vh;
+				cursor: pointer;
+				transition: all 0.2s ease;
+				height: 25vh; 
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				line-height: 1.3;
+			}
+			.kiosk-btn h2 { font-size: 3.5vh; margin: 0; }
+			.kiosk-btn p { font-size: 2.2vh; margin: 5px 0 0; opacity: 0.8; }
+			.kiosk-btn:hover {
+				background-color: var(--background);
+				color: var(--text-dark);
+				transform: scale(1.02);
+				border-color: #ccc;
+			}
+			.display-footer {
+				text-align: center;
+				font-size: 2vh;
+				padding-top: 1.5vh;
+				border-top: 1px solid var(--kemenag-gold);
+				flex-shrink: 0;
+			}
+			/* Modal (Pop-up) */
+			.modal-overlay {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background: rgba(0, 0, 0, 0.75);
+				display: none;
+				justify-content: center; align-items: center; z-index: 1000;
+			}
+			.modal-content {
+				background: white; padding: 40px; border-radius: 10px;
+				text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+				width: 450px; color: var(--text-dark); 
+			}
+			.modal-content h3 { font-size: 1.5rem; color: #555; margin-top: 0; }
+			.modal-content h1 { font-size: 6rem; color: var(--kemenag-green); margin: 10px 0; }
+			.modal-content h2 { font-size: 1.8rem; color: var(--text-dark); margin-top: 5px; margin-bottom: 20px; }
+			.modal-content .btn { padding: 15px 30px; font-size: 1.2rem; }
+			
+			.print-header, .print-separator, .print-timestamp {
+				display: none; /* Sembunyikan di layar */
+			}
+			.print-logo { display: none; } 
+			
+			/* CSS Cetak (@media print) */
+			@media print {
+				body {
+					width: 80mm;
+					margin: 0;
+					padding: 0;
+				}
+				body > * {
+					visibility: hidden;
+				}
+				.modal-overlay, .modal-content, .modal-content * {
+					visibility: visible;
+					color: #000 !important; /* Semua teks hitam */
+				}
+				.modal-overlay {
+					position: absolute;
+					left: 0;
+					top: 0;
+					width: 100%;
+					height: auto;
+					background: none;
+					display: block !important;
+				}
+				.modal-content {
+					width: 100%; 
+					margin: 0;
+					padding: 3mm; 
+					box-sizing: border-box; 
+					box-shadow: none;
+					border: none;
+					text-align: center; /* Konten di tengah */
+				}
+				#btn-selesai, #print-message {
+					display: none !important;
+				}
+				.print-header, .print-separator, .print-timestamp, .print-logo {
+					display: block !important;
+					color: #000;
+				}
+				.print-header {
+					display: flex !important;
+					align-items: center; 
+					justify-content: center; 
+					gap: 4mm; 
+				}
+				.print-logo {
+					width: 15mm; 
+					height: auto;
+					flex-shrink: 0; 
+				}
+				.print-header-text {
+					flex-grow: 1;
+					text-align: left; 
+				}
+				.print-header-text h3 {
+					font-size: 10pt;
+					font-weight: bold;
+					margin: 0;
+				}
+				.print-header-text h4 {
+					font-size: 9pt;
+					font-weight: bold;
+					margin: 2px 0 0 0;
+				}
+				.print-separator {
+					border: 0;
+					border-top: 1px dashed #000;
+					margin: 10px 0;
+				}
+				.modal-content h3 { /* "NOMOR ANTRIAN ANDA" */
+					font-size: 12pt;
+					font-weight: bold;
+					margin-top: 10px;
+					margin-bottom: 0;
+				}
+				.modal-content h1 { /* "A-2" */
+					font-size: 48pt;
+					font-weight: bold;
+					margin: 5px 0;
+				}
+				.modal-content p { /* "Layanan:" */
+					font-size: 10pt;
+					margin: 0;
+				}
+				.modal-content h2 { /* "Pelayanan Haji" */
+					font-size: 14pt;
+					font-weight: bold;
+					margin: 2px 0 15px 0;
+				}
+				.print-timestamp {
+					font-size: 9pt;
+					margin-top: 15px;
+					padding-top: 10px;
+					border-top: 1px dashed #000;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="display-wrapper">
+			<header class="display-header">
+				<img class="logo-kiri" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Kementerian_Agama_new_logo.png/150px-Kementerian_Agama_new_logo.png" alt="Logo Kemenag">
+				<div class="header-text">
+					<h1>Ambil Nomor Antrian PTSP</h1>
+					<p>Silakan pilih jenis layanan Anda</p>
+				</div>
+				<div class="header-right-content">
+					<img src="https://jabar.kemenag.go.id/themes/front/assets/img/berdampak.png" alt="Logo Berdampak">
+					<div id="clock-container">
+						<div id="clock-time">00:00:00</div>
+						<div id="clock-date">Memuat...</div>
+					</div>
+				</div>
+			</header>
+
+			<main class="kiosk-main-content">
+				<div id="pilihan-layanan" class="kiosk-menu">
+					<button class="kiosk-btn" data-kode="A" data-service="Pelayanan Haji">
+						<h2>Pelayanan Haji</h2>
+						<p>(Antrian A)</p>
+					</button>
+					<button class="kiosk-btn" data-kode="B" data-service="Pelayanan Umrah">
+						<h2>Pelayanan Umrah</h2>
+						<p>(Antrian B)</p>
+					</button>
+					<button class="kiosk-btn" data-kode="C" data-service="Administratif (Non Haji/Umrah)">
+						<h2>Administratif</h2>
+						<p>(Antrian C)</p>
+					</button>
+					<button class="kiosk-btn" data-kode="D" data-service="Customer Service">
+						<h2>Customer Service</h2>
+						<p>(Antrian D)</p>
+					</button>
+				</div>
+			</main>
+			
+			<footer class="display-footer">
+				© 2025 SUBBAG TU KEMENAG DEPOK
+			</footer>
+		</div>
+
+		<div id="ticket-modal" class="modal-overlay">
+			<div class="modal-content">
+				
+				<div class="print-header">
+					<img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Kementerian_Agama_new_logo.png" alt="Logo Kemenag" class="print-logo">
+					<div class="print-header-text">
+						<h3>PELAYANAN TERPADU SATU PINTU</h3>
+						<h4>KANTOR KEMENTERIAN AGAMA KOTA DEPOK</h4>
+						</div>
+				</div>
+				<hr class="print-separator">
+				
+				<h3>NOMOR ANTRIAN ANDA</h3>
+				<h1 id="nomor-baru">-</h1>
+				<p style="font-size: 1.1rem">Layanan:</p>
+				<h2 id="layanan-dipilih"></h2>
+				
+				<p id="print-message">Silakan tunggu nomor Anda dipanggil.<br>Tiket Anda sedang dicetak...</p>
+				
+				<p id="ticket-time" class="print-timestamp"></p>
+
+				<button id="btn-selesai" class="btn">Selesai</button>
+			</div>
+		</div>
+
+		<script>
+			// --- 1. KONFIGURASI DAN ELEMEN DOM ---
+			const API_URL_BASE = 'https://ptsp.amal.or.id/api.php';
+			const buttons = document.querySelectorAll('.kiosk-btn');
+			const modal = document.getElementById('ticket-modal');
+			const btnSelesai = document.getElementById('btn-selesai');
+			const nomorBaruEl = document.getElementById('nomor-baru');
+			const layananDipilihEl = document.getElementById('layanan-dipilih');
+			const mainButtons = document.getElementById('pilihan-layanan'); 
+			const ticketTimeEl = document.getElementById('ticket-time');
+			const timeEl = document.getElementById('clock-time');
+			const dateEl = document.getElementById('clock-date');
+			const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+			const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+			// --- 2. FUNGSI JAM HEADER ---
+			function updateClock() {
+				const now = new Date();
+				const hours = now.getHours().toString().padStart(2, '0');
+				const minutes = now.getMinutes().toString().padStart(2, '0');
+				const seconds = now.getSeconds().toString().padStart(2, '0');
+				
+				if (timeEl) {
+					timeEl.textContent = `${hours}:${minutes}:${seconds} WIB`;
+				}
+				const dayName = days[now.getDay()];
+				const dateNum = now.getDate();
+				const monthName = months[now.getMonth()];
+				const year = now.getFullYear();
+				if (dateEl) {
+					dateEl.textContent = `${dayName}, ${dateNum} ${monthName} ${year}`;
+				}
+			}
+			
+			// --- 3. FUNGSI KIOSK ---
+			async function ambilNomor(kode, serviceName) {
+				mainButtons.style.pointerEvents = 'none';
+				mainButtons.style.opacity = '0.5';
+
+				try {
+					const response = await fetch(
+						`${API_URL_BASE}?action=tambah`,
+						{
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ kode: kode }), 
+						}
+					);
+
+					const data = await response.json();
+					if (!response.ok || !data.success) {
+						throw new Error(data.message || 'Gagal mengambil nomor');
+					}
+
+					nomorBaruEl.textContent = data.nomor_baru; 
+					layananDipilihEl.textContent = serviceName;
+					
+					const now = new Date();
+					const formattedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+					const formattedDate = now.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+					
+					ticketTimeEl.innerHTML = `<b>Waktu Ambil Antrian:</b><br>${formattedDate}, Pukul ${formattedTime} WIB`;
+
+					modal.style.display = 'flex';
+					window.print(); 
+
+				} catch (error) {
+					console.error('Error:', error);
+					alert('Gagal mengambil nomor antrian. Silakan coba lagi.');
+				} finally {
+					mainButtons.style.pointerEvents = 'auto';
+					mainButtons.style.opacity = '1';
+				}
+			}
+
+			// --- 4. EVENT LISTENERS ---
+			buttons.forEach((button) => {
+				button.addEventListener('click', () => {
+					const kode = button.dataset.kode; 
+					const service = button.dataset.service; 
+					ambilNomor(kode, service);
+				});
+			});
+
+			btnSelesai.addEventListener('click', () => {
+				modal.style.display = 'none';
+				nomorBaruEl.textContent = '-';
+				layananDipilihEl.textContent = '';
+				ticketTimeEl.innerHTML = ''; 
+			});
+			
+			// --- 5. SCRIPT YANG DIJALANKAN SAAT LOAD ---
+			updateClock();
+			setInterval(updateClock, 1000);
+			
+		</script>
+	</body>
+</html>
